@@ -70,6 +70,10 @@
     <LAYOUT>
       <INPUTS>
         <BUS index="0" layout="L R"/>
+        <BUS index="1" layout="L R"/>
+        <BUS index="2" layout="L R"/>
+        <BUS index="3" layout="L R"/>
+        <BUS index="4" layout="L R"/>
       </INPUTS>
       <OUTPUTS>
         <BUS index="0" layout="L R"/>

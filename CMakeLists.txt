@@ -25,6 +25,7 @@ juce_add_plugin(Swichander
 
 # Add source files
 target_sources(Swichander PRIVATE
+    Source/CrossFader.cpp
     Source/LongPressButton.cpp
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
@@ -50,4 +51,6 @@ target_compile_features(Swichander PUBLIC cxx_std_17)
 
 
 # Disable VST2 to avoid parameter automation conflict with VST3
-target_compile_definitions(Swichander PRIVATE JUCE_VST3_CAN_REPLACE_VST2=0)
+target_compile_definitions(Swichander PRIVATE
+    JUCE_VST3_CAN_REPLACE_VST2=0
+)

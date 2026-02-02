@@ -12,14 +12,14 @@
 //==============================================================================
 SwichanderAudioProcessor::SwichanderAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (
+     : AudioProcessor(
          BusesProperties()
-             .withInput  ("Input 1", juce::AudioChannelSet::stereo(), true)
-             .withInput  ("Input 2", juce::AudioChannelSet::stereo(), true)
-             .withInput  ("Input 3", juce::AudioChannelSet::stereo(), true)
-             .withInput  ("Input 4", juce::AudioChannelSet::stereo(), true)
-             .withInput  ("Input 5", juce::AudioChannelSet::stereo(), true)
-             .withOutput ("Output",  juce::AudioChannelSet::stereo(), true)
+             .withInput("Input 1", juce::AudioChannelSet::stereo(), true)
+             .withInput("Input 2", juce::AudioChannelSet::stereo(), true)
+             .withInput("Input 3", juce::AudioChannelSet::stereo(), true)
+             .withInput("Input 4", juce::AudioChannelSet::stereo(), true)
+             .withInput("Input 5", juce::AudioChannelSet::stereo(), true)
+             .withOutput("Output", juce::AudioChannelSet::stereo(), true)
        )
 #endif
 {
@@ -66,24 +66,23 @@ int SwichanderAudioProcessor::getCurrentProgram()
     return 0;
 }
 
-void SwichanderAudioProcessor::setCurrentProgram (int index)
+void SwichanderAudioProcessor::setCurrentProgram(int index)
 {
 }
 
-const juce::String SwichanderAudioProcessor::getProgramName (int index)
+const juce::String SwichanderAudioProcessor::getProgramName(int index)
 {
     return {};
 }
 
-void SwichanderAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void SwichanderAudioProcessor::changeProgramName(int index, const juce::String& newName)
 {
 }
 
 //==============================================================================
-void SwichanderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void SwichanderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    crossFader.prepare(sampleRate, 0.02f);
 }
 
 void SwichanderAudioProcessor::releaseResources()
@@ -93,7 +92,7 @@ void SwichanderAudioProcessor::releaseResources()
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool SwichanderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool SwichanderAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
     // This is the place where you check if the layout is supported.
     // In this template code we only support mono or stereo.
@@ -113,32 +112,52 @@ bool SwichanderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 }
 #endif
 
-void SwichanderAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void SwichanderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    handleMidi(midiMessages);
+    processBuffer(buffer);
+}
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing.
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+void SwichanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
+{
+    for (const auto metadata : midi)
     {
-        auto* channelData = buffer.getWritePointer (channel);
+        const auto msg = metadata.getMessage();
 
-        // ..do something to the data...
+        printf("Yay: %s\n", msg.getRawData());
+
+        if (msg.isController() && msg.getControllerNumber() == 20)
+        {
+            crossFader.requestBus(msg.getControllerValue());
+        }
+    }
+}
+
+void SwichanderAudioProcessor::processBuffer(juce::AudioBuffer<float>& buffer)
+{
+    auto out = getBusBuffer(buffer, false, 0);
+
+    auto currentIn = getBusBuffer(buffer, true, crossFader.getCurrentBus());
+    auto targetIn = getBusBuffer(buffer, true, crossFader.getTargetBus());
+
+    const int numChannels = juce::jmin(
+        currentIn.getNumChannels(),
+        targetIn.getNumChannels(),
+        out.getNumChannels()
+    );
+    const int numSamples = out.getNumSamples();
+
+    for (int s = 0; s < numSamples; ++s)
+    {
+        const float g = crossFader.getNextValue();
+
+        for (int ch = 0; ch < numChannels; ++ch)
+        {
+            auto sample = currentIn.getSample(ch, s) * (1.0 - g) + targetIn.getSample(ch, s) * g;
+            out.setSample(ch, s, sample);
+        }
     }
 }
 
@@ -150,18 +169,18 @@ bool SwichanderAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* SwichanderAudioProcessor::createEditor()
 {
-    return new SwichanderAudioProcessorEditor (*this);
+    return new SwichanderAudioProcessorEditor(*this);
 }
 
 //==============================================================================
-void SwichanderAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void SwichanderAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
 }
 
-void SwichanderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void SwichanderAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
