@@ -1,6 +1,6 @@
 #include "CrossFader.h"
 
-void CrossFader::prepare(double sampleRate, float fadeTimeMs)
+void CrossFader::prepare(double sampleRate, int fadeTimeMs)
 {
     currentBus = targetBus = requestedBus = 0;
 
