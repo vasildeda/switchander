@@ -23,6 +23,12 @@ juce_add_plugin(Swichander
     PLUGIN_MANUFACTURER "Vasilovo"
 )
 
+# Add headers
+target_include_directories(Swichander
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Include
+)
+
 # Add source files
 target_sources(Swichander PRIVATE
     Source/CrossFader.cpp
