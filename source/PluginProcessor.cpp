@@ -149,19 +149,14 @@ void SwichanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
             midiTriggers_[target].store(packMidiForMatch(*msg), std::memory_order_relaxed);
             midiLearnTarget_.store(-1, std::memory_order_relaxed);
             triggerAsyncUpdate();
-        }
-    }
-
-    for (const auto metadata : midi)
-    {
-        const auto msg = metadata.getMessage();
-
-        for (int i = 0; i < 5; ++i)
-        {
-            if (midiMatches(msg, midiTriggers_[i].load(std::memory_order_relaxed)))
+        } else {
+            for (int i = 0; i < 5; ++i)
             {
-                crossFader_.requestBus(i);
-                break;
+                if (midiMatches(*msg, midiTriggers_[i].load(std::memory_order_relaxed)))
+                {
+                    crossFader_.requestBus(i);
+                    break;
+                }
             }
         }
     }
