@@ -5,7 +5,6 @@ void MidiDebouncer::prepare(double sampleRate, int samplesPerBlock, int ignoreTi
 {
     samplesPerBlock_ = samplesPerBlock;
     ignoreSamples_ = static_cast<juce::int64>(sampleRate * ignoreTimeMs * 0.001);
-    printf("Ignore samples: %llD\n", ignoreSamples_);
     samplesSinceLast_ = ignoreSamples_;
 }
 
@@ -20,7 +19,6 @@ std::optional<juce::MidiMessage> MidiDebouncer::processBlock(const juce::MidiBuf
 
         if (samplesElapsed >= ignoreSamples_)
         {
-            printf("Samples elapsed: %lld\n", samplesElapsed);
             samplesSinceLast_ = 0; // reset after accepting message
             return metadata.getMessage();
         }

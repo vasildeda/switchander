@@ -82,7 +82,7 @@ void SwichanderAudioProcessor::changeProgramName(int index, const juce::String& 
 //==============================================================================
 void SwichanderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    midiDebouncer_.prepare(sampleRate, samplesPerBlock, 1000);
+    midiDebouncer_.prepare(sampleRate, samplesPerBlock, 200);
     crossFader_.prepare(sampleRate, 200);
 }
 
@@ -154,7 +154,8 @@ void SwichanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
         {
             for (int i = 0; i < 5; ++i)
             {
-                if (midiMatches(*msg, midiTriggers_[i].load(std::memory_order_relaxed)))
+                auto stored = midiTriggers_[i].load(std::memory_order_relaxed);
+                if (midiMatches(*msg, stored))
                 {
                     crossFader_.requestBus(i);
                     selectedBus_.store(i, std::memory_order_relaxed);

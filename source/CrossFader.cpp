@@ -15,6 +15,7 @@ void CrossFader::requestBus(int newBus)
 
 float CrossFader::getNextValue()
 {
+    updateBusesWhenPossible();
     return fader_.getNextValue();
 }
 
