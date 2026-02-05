@@ -207,15 +207,42 @@ juce::AudioProcessorEditor* SwichanderAudioProcessor::createEditor()
 //==============================================================================
 void SwichanderAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto xml = std::make_unique<juce::XmlElement>("Swichander");
+    xml->setAttribute("version", 1);
+
+    auto* triggers = xml->createNewChildElement("triggers");
+    for (int i = 0; i < 5; ++i)
+    {
+        auto* trigger = triggers->createNewChildElement("trigger");
+        trigger->addTextElement(juce::String(midiTriggers_[i].load(std::memory_order_relaxed)));
+    }
+
+    copyXmlToBinary(*xml, destData);
 }
 
 void SwichanderAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    auto xml = getXmlFromBinary(data, sizeInBytes);
+
+    if (xml != nullptr && xml->hasTagName("Swichander"))
+    {
+        // int version = xml->getIntAttribute("version", 1);
+
+        if (auto* triggers = xml->getChildByName("triggers"))
+        {
+            int i = 0;
+            for (auto* trigger : triggers->getChildIterator())
+            {
+                if (i >= 5)
+                    break;
+                midiTriggers_[i].store(trigger->getAllSubText().getIntValue(),
+                                       std::memory_order_relaxed);
+                ++i;
+            }
+        }
+
+        triggerAsyncUpdate();
+    }
 }
 
 //==============================================================================
