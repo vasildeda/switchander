@@ -121,21 +121,48 @@ void SwichanderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
     processBuffer(buffer);
 }
 
+int32_t SwichanderAudioProcessor::packMidiForMatch(const juce::MidiMessage& msg)
+{
+    const auto* data = msg.getRawData();
+    return (static_cast<int32_t>(data[0]) << 8) | static_cast<int32_t>(data[1]);
+}
+
+bool SwichanderAudioProcessor::midiMatches(const juce::MidiMessage& incoming, int32_t stored)
+{
+    if (stored == kUnassignedTrigger)
+        return false;
+
+    // Ignore Note On with velocity 0 (treated as Note Off)
+    if (incoming.isNoteOn() && incoming.getVelocity() == 0)
+        return false;
+
+    return packMidiForMatch(incoming) == stored;
+}
+
 void SwichanderAudioProcessor::handleMidi(const juce::MidiBuffer& midi)
 {
     if (auto msg = midiDebouncer_.processBlock(midi))
     {
-        printf("Yeah: %s\n", msg->getRawData());
+        int target = midiLearnTarget_.load(std::memory_order_relaxed);
+        if (target >= 0 && target < 5)
+        {
+            midiTriggers_[target].store(packMidiForMatch(*msg), std::memory_order_relaxed);
+            midiLearnTarget_.store(-1, std::memory_order_relaxed);
+            triggerAsyncUpdate();
+        }
     }
+
     for (const auto metadata : midi)
     {
         const auto msg = metadata.getMessage();
 
-        printf("Yay: %s\n", msg.getRawData());
-
-        if (msg.isController() && msg.getControllerNumber() == 20)
+        for (int i = 0; i < 5; ++i)
         {
-            crossFader_.requestBus(msg.getControllerValue());
+            if (midiMatches(msg, midiTriggers_[i].load(std::memory_order_relaxed)))
+            {
+                crossFader_.requestBus(i);
+                break;
+            }
         }
     }
 }
@@ -194,8 +221,8 @@ void SwichanderAudioProcessor::setStateInformation(const void* data, int sizeInB
 //==============================================================================
 void SwichanderAudioProcessor::handleAsyncUpdate()
 {
-    if (onMidiLearnStateChanged)
-        onMidiLearnStateChanged();
+    if (onMidiLearned)
+        onMidiLearned();
 }
 
 //==============================================================================

@@ -42,8 +42,9 @@ private:
     SwichanderAudioProcessor& audioProcessor_;
 
     LogoPlaceholder logo_;
-    juce::ToggleButton midiLearnButton_ { "Learn" };
-    std::array<juce::Label, 5> midiLabels_;
+    std::array<juce::TextButton, 5> midiButtons_;
+
+    void updateMidiButtons();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwichanderAudioProcessorEditor)
 };

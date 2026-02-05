@@ -12,6 +12,8 @@
 #include "MidiDebouncer.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_core/juce_core.h>
+#include <array>
+#include <atomic>
 
 //==============================================================================
 class SwichanderAudioProcessor : public juce::AudioProcessor,
@@ -56,9 +58,9 @@ public:
     void setStateInformation(const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    // MIDI learn state (bidirectional, thread-safe)
-    std::atomic<bool> midiLearnActive_ { false };
-    std::function<void()> onMidiLearnStateChanged;
+    // MIDI learn: -1 = not learning, 0-4 = learning for that bus
+    std::atomic<int> midiLearnTarget_ { -1 };
+    std::function<void()> onMidiLearned;
 
     void handleAsyncUpdate() override;
 
@@ -66,6 +68,20 @@ private:
     //==============================================================================
     MidiDebouncer midiDebouncer_;
     CrossFader crossFader_;
+
+    // MIDI triggers for each bus (0-4). -1 means unassigned.
+    // Packed as (status << 8) | data1, ignoring velocity/value.
+    static constexpr int32_t kUnassignedTrigger = -1;
+    std::array<std::atomic<int32_t>, 5> midiTriggers_ {
+        kUnassignedTrigger, kUnassignedTrigger, kUnassignedTrigger,
+        kUnassignedTrigger, kUnassignedTrigger
+    };
+
+    // Pack MIDI message for matching (ignores velocity/value)
+    static int32_t packMidiForMatch(const juce::MidiMessage& msg);
+
+    // Check if incoming message matches a stored trigger
+    static bool midiMatches(const juce::MidiMessage& incoming, int32_t stored);
 
     //==============================================================================
     void handleMidi(const juce::MidiBuffer& midi);
