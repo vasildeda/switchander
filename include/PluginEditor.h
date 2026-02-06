@@ -11,21 +11,29 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_graphics/juce_graphics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "BinaryData.h"
 #include "LongPressButton.h"
 #include "PluginProcessor.h"
 
 //==============================================================================
-class LogoPlaceholder : public juce::Component
+class Logo : public juce::Component
 {
 public:
+    Logo()
+    {
+        logo_ = juce::Drawable::createFromImageData(BinaryData::logo_svg,
+                                                    BinaryData::logo_svgSize);
+    }
+
     void paint(juce::Graphics& g) override
     {
-        g.setColour(juce::Colours::darkgrey);
-        g.fillRoundedRectangle(getLocalBounds().toFloat().reduced(4), 8.0f);
-        g.setColour(juce::Colours::white);
-        g.setFont(16.0f);
-        g.drawText("LOGO", getLocalBounds(), juce::Justification::centred);
+        if (logo_)
+            logo_->drawWithin(g, getLocalBounds().toFloat().reduced(4),
+                              juce::RectanglePlacement::centred, 1.0f);
     }
+
+private:
+    std::unique_ptr<juce::Drawable> logo_;
 };
 
 //==============================================================================
@@ -42,7 +50,7 @@ public:
 private:
     SwichanderAudioProcessor& audioProcessor_;
 
-    LogoPlaceholder logo_;
+    Logo logo_;
     std::array<LongPressButton, 5> channelButtons_;
 
     void updateChannelButtons();

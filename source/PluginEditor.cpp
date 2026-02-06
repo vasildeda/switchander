@@ -88,16 +88,12 @@ void SwichanderAudioProcessorEditor::resized()
                              Track(Fr(1)), Track(Fr(1)) };
 
     grid.items = {
-        juce::GridItem(logo_),
-        juce::GridItem(),  // empty
-        juce::GridItem(),  // empty
-        juce::GridItem(),  // empty
-        juce::GridItem(),  // empty
-        juce::GridItem(channelButtons_[0]),
-        juce::GridItem(channelButtons_[1]),
-        juce::GridItem(channelButtons_[2]),
-        juce::GridItem(channelButtons_[3]),
-        juce::GridItem(channelButtons_[4])
+        juce::GridItem(logo_).withColumn({ 2, 5 }).withRow({ 1, 2 }),  // span columns 2-4
+        juce::GridItem(channelButtons_[0]).withColumn({ 1, 2 }).withRow({ 2, 3 }),
+        juce::GridItem(channelButtons_[1]).withColumn({ 2, 3 }).withRow({ 2, 3 }),
+        juce::GridItem(channelButtons_[2]).withColumn({ 3, 4 }).withRow({ 2, 3 }),
+        juce::GridItem(channelButtons_[3]).withColumn({ 4, 5 }).withRow({ 2, 3 }),
+        juce::GridItem(channelButtons_[4]).withColumn({ 5, 6 }).withRow({ 2, 3 })
     };
 
     grid.performLayout(getLocalBounds());

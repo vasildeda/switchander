@@ -23,6 +23,11 @@ juce_add_plugin(Swichander
     PLUGIN_MANUFACTURER "Vasilovo"
 )
 
+# Add resources
+juce_add_binary_data(SwichanderResources SOURCES
+    resources/logo.svg
+)
+
 # Add source files
 target_sources(Swichander PRIVATE
     source/CrossFader.cpp
@@ -51,6 +56,7 @@ target_link_libraries(Swichander PRIVATE
     juce::juce_graphics
     juce::juce_gui_basics
     juce::juce_gui_extra
+    SwichanderResources
 )
 
 # Set C++ standard
