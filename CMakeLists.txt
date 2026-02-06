@@ -25,7 +25,8 @@ juce_add_plugin(Switchander
 
 # Add resources
 juce_add_binary_data(SwitchanderResources SOURCES
-    resources/logo.svg
+    resources/vr.svg
+    resources/switchander.svg
 )
 
 # Add source files

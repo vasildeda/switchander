@@ -21,19 +21,22 @@ class Logo : public juce::Component
 public:
     Logo()
     {
-        logo_ = juce::Drawable::createFromImageData(BinaryData::logo_svg,
-                                                    BinaryData::logo_svgSize);
+        vr_ = juce::Drawable::createFromImageData(BinaryData::vr_svg,
+                                                    BinaryData::vr_svgSize);
+        switchander_ = juce::Drawable::createFromImageData(BinaryData::switchander_svg,
+                                                           BinaryData::switchander_svgSize);
     }
 
     void paint(juce::Graphics& g) override
     {
-        if (logo_)
-            logo_->drawWithin(g, getLocalBounds().toFloat().reduced(4),
+        if (vr_)
+            vr_->drawWithin(g, getLocalBounds().toFloat().reduced(4),
                               juce::RectanglePlacement::centred, 1.0f);
     }
 
 private:
-    std::unique_ptr<juce::Drawable> logo_;
+    std::unique_ptr<juce::Drawable> vr_;
+    std::unique_ptr<juce::Drawable> switchander_;
 };
 
 //==============================================================================
