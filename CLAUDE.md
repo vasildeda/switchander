@@ -31,6 +31,8 @@ Switchander is a JUCE audio plugin (AU/VST3/Standalone) that processes MIDI inpu
 - No space between method/function names and parentheses: `foo(x)` not `foo (x)`
 - Member variables use underscore suffix: `audioProcessor_` not `audioProcessor`
 - Use JUCE naming conventions (camelCase for methods, PascalCase for classes)
+- Split interface (header) and implementation (cpp)
+- Each class should have it's own files
 
 ## Commit Messages
 

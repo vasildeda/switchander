@@ -32,6 +32,7 @@ juce_add_binary_data(SwitchanderResources SOURCES
 # Add source files
 target_sources(Switchander PRIVATE
     source/CrossFader.cpp
+    source/Logo.cpp
     source/LongPressButton.cpp
     source/MidiDebouncer.cpp
     source/PluginProcessor.cpp
