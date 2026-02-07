@@ -62,11 +62,22 @@ void SwitchanderAudioProcessorEditor::updateChannelButtons()
         }
         else
         {
-            // Display as hex for now (status:data1)
             int status = (trigger >> 8) & 0xFF;
             int data1 = trigger & 0xFF;
-            channelButtons_[i].setText(juce::String::toHexString(status) + ":" +
-                                       juce::String::toHexString(data1));
+            int channel = (status & 0x0F) + 1;
+            int type = status & 0xF0;
+
+            juce::String typeName;
+            if (type == 0x90)
+                typeName = "Note " + juce::String(data1);
+            else if (type == 0xB0)
+                typeName = "CC " + juce::String(data1);
+            else if (type == 0xC0)
+                typeName = "Prog " + juce::String(data1);
+            else
+                typeName = juce::String::toHexString(status) + ":" + juce::String::toHexString(data1);
+
+            channelButtons_[i].setText("Ch " + juce::String(channel) + " " + typeName);
         }
     }
 }
