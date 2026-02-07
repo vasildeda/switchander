@@ -29,5 +29,6 @@ Thumbs.db
 
 # other
 .cache/
+compile_commands.json
 libs/
 /AudioPluginHost.app
