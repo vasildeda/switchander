@@ -69,7 +69,7 @@ void SwitchanderAudioProcessorEditor::updateChannelButtons()
 
             juce::String typeName;
             if (type == 0x90)
-                typeName = "Note " + juce::String(data1);
+                typeName = juce::MidiMessage::getMidiNoteName(data1, true, true, 3);
             else if (type == 0xB0)
                 typeName = "CC " + juce::String(data1);
             else if (type == 0xC0)
