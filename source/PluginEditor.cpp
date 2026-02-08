@@ -20,7 +20,15 @@ SwitchanderAudioProcessorEditor::SwitchanderAudioProcessorEditor(SwitchanderAudi
     {
         channelButtons_[i].setText("--");
         channelButtons_[i].onClick = [this, i] {
-            audioProcessor_.selectBus(i);
+            if (audioProcessor_.midiLearnTarget_.load(std::memory_order_relaxed) == i)
+            {
+                audioProcessor_.midiLearnTarget_.store(-1, std::memory_order_relaxed);
+                updateChannelButtons();
+            }
+            else
+            {
+                audioProcessor_.selectBus(i);
+            }
         };
         channelButtons_[i].onLongPress = [this, i] {
             audioProcessor_.clearMidiTrigger(i);
