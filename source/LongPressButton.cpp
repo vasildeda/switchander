@@ -27,7 +27,7 @@ void LongPressButton::paint(juce::Graphics& g)
     auto bounds = getLocalBounds().toFloat().reduced(2.0f);
 
     // Background
-    g.setColour(juce::Colours::darkgrey);
+    g.setColour(juce::Colours::black);
     g.fillRoundedRectangle(bounds, 6.0f);
 
     // Outline based on state
@@ -38,12 +38,12 @@ void LongPressButton::paint(juce::Graphics& g)
     else
         g.setColour(juce::Colours::grey);
 
-    g.drawRoundedRectangle(bounds, 6.0f, 2.0f);
+    g.drawRoundedRectangle(bounds, 16.0f, 8.0f);
 
     // Text
     g.setColour(juce::Colours::white);
-    g.setFont(14.0f);
-    g.drawText(text_, getLocalBounds(), juce::Justification::centred);
+    g.setFont(28.0f);
+    g.drawFittedText(text_, getLocalBounds(), juce::Justification::centred, 2);
 }
 
 void LongPressButton::mouseDown(const juce::MouseEvent& e)

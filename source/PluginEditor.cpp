@@ -78,7 +78,7 @@ void SwitchanderAudioProcessorEditor::updateChannelButtons()
             else
                 typeName = juce::String::toHexString(status) + ":" + juce::String::toHexString(data1);
 
-            channelButtons_[i].setText("Ch " + juce::String(channel) + " " + typeName);
+            channelButtons_[i].setText("Ch " + juce::String(channel) + "\n" + typeName);
         }
     }
 }
@@ -98,7 +98,7 @@ void SwitchanderAudioProcessorEditor::resized()
     using Track = juce::Grid::TrackInfo;
     using Fr = juce::Grid::Fr;
 
-    constexpr float gap = 8.0f;
+    constexpr float gap = 16.0f;
 
     juce::Grid grid;
     grid.templateRows = { Track(Fr(1)), Track(Fr(1)) };
@@ -107,17 +107,14 @@ void SwitchanderAudioProcessorEditor::resized()
     grid.columnGap = juce::Grid::Px(gap);
     grid.rowGap = juce::Grid::Px(gap);
 
-    auto marginLeft = juce::GridItem::Margin(0, 0, gap, gap);    // bottom, left
-    auto marginMiddle = juce::GridItem::Margin(0, 0, gap, 0);    // bottom only
-    auto marginRight = juce::GridItem::Margin(0, gap, gap, 0);   // bottom, right
-
     grid.items = {
-        juce::GridItem(channelButtons_[0]).withColumn({ 1, 2 }).withRow({ 2, 3 }).withMargin(marginLeft),
-        juce::GridItem(channelButtons_[1]).withColumn({ 2, 3 }).withRow({ 2, 3 }).withMargin(marginMiddle),
-        juce::GridItem(channelButtons_[2]).withColumn({ 3, 4 }).withRow({ 2, 3 }).withMargin(marginMiddle),
-        juce::GridItem(channelButtons_[3]).withColumn({ 4, 5 }).withRow({ 2, 3 }).withMargin(marginMiddle),
-        juce::GridItem(channelButtons_[4]).withColumn({ 5, 6 }).withRow({ 2, 3 }).withMargin(marginRight)
+        juce::GridItem(channelButtons_[0]).withColumn({ 1, 2 }).withRow({ 2, 3 }),
+        juce::GridItem(channelButtons_[1]).withColumn({ 2, 3 }).withRow({ 2, 3 }),
+        juce::GridItem(channelButtons_[2]).withColumn({ 3, 4 }).withRow({ 2, 3 }),
+        juce::GridItem(channelButtons_[3]).withColumn({ 4, 5 }).withRow({ 2, 3 }),
+        juce::GridItem(channelButtons_[4]).withColumn({ 5, 6 }).withRow({ 2, 3 })
     };
 
-    grid.performLayout(getLocalBounds());
+    auto area = getLocalBounds().reduced(static_cast<int>(gap));
+    grid.performLayout(area);
 }
